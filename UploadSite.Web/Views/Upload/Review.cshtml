@@ -1,0 +1,54 @@
+@model IReadOnlyList<UploadSite.Web.ViewModels.Upload.Batch.BatchReviewGroupListItemViewModel>
+@{
+    ViewData["Title"] = "Review Queue";
+}
+
+<section class="page-header">
+    <div>
+        <p class="eyebrow">Admin review</p>
+        <h1>Review queue</h1>
+        <p class="subtle-copy">Tracks stay here until metadata is complete and the final import path looks safe.</p>
+    </div>
+</section>
+
+<section class="panel-card">
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Album</th>
+                    <th>Tracks</th>
+                    <th>Ready</th>
+                    <th>Uploaded by</th>
+                    <th>Checks</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        <strong>@item.AlbumArtist</strong>
+                        <div class="muted-line">@(item.Year > 0 ? item.Year.ToString() : "Unknown year") - @item.Album</div>
+                    </td>
+                    <td>@item.TrackCount</td>
+                    <td>@item.ReadyCount / @item.TrackCount</td>
+                    <td>
+                        @item.UploadedBy
+                        <div class="muted-line">@item.LatestUploadAtUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</div>
+                    </td>
+                    <td>
+                        <div class="review-flags">
+                            <span class="badge rounded-pill @(item.HasAnyEmbeddedCover ? "text-bg-success" : "text-bg-danger")">cover</span>
+                        </div>
+                    </td>
+                    <td class="text-end">
+                        <a asp-action="EditBatch" asp-route-batchId="@item.BatchId" class="btn btn-sm btn-outline-primary">Review album</a>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</section>

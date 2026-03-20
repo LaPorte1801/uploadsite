@@ -1,0 +1,183 @@
+@model UploadSite.Web.ViewModels.Upload.Batch.BatchReviewViewModel
+@{
+    ViewData["Title"] = "Batch Review";
+    var batchId = Model.BatchId;
+}
+
+<section class="page-header">
+    <div>
+        <p class="eyebrow">Batch review</p>
+        <h1>@Model.AlbumArtist / @Model.Album</h1>
+        <p class="subtle-copy">@(Model.Year > 0 ? Model.Year.ToString() : "Unknown year") • @Model.Tracks.Count track(s)</p>
+    </div>
+</section>
+
+<div class="two-column-grid">
+    <section class="panel-card">
+        <h2>Album metadata</h2>
+        <form asp-action="EditBatch" method="post" enctype="multipart/form-data" class="stack-form">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="batchId" value="@batchId" />
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="Artist" class="form-label"></label>
+                    <input asp-for="Artist" class="form-control" />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="AlbumArtist" class="form-label"></label>
+                    <input asp-for="AlbumArtist" class="form-control" />
+                </div>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Album" class="form-label"></label>
+                <input asp-for="Album" class="form-control" />
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="Year" class="form-label"></label>
+                    <input asp-for="Year" class="form-control" />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="Genre" class="form-label"></label>
+                    <input asp-for="Genre" class="form-control" />
+                </div>
+            </div>
+            <div class="mb-4">
+                <label asp-for="CoverImage" class="form-label"></label>
+                <input asp-for="CoverImage" class="form-control" accept=".jpg,.jpeg,image/jpeg" />
+                <div class="form-text">One JPEG can be applied to every track in this batch.</div>
+            </div>
+            <div class="d-flex gap-2 flex-wrap mb-4">
+                <button type="button" class="btn btn-outline-secondary js-autofill-titles">Apply filenames as titles</button>
+                <button type="button" class="btn btn-outline-secondary js-autonumber-tracks">Auto-number tracks</button>
+            </div>
+
+            <h3 class="mb-3">Tracks</h3>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Source</th>
+                            <th>Track #</th>
+                            <th>Title</th>
+                            <th>Ready</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @for (var i = 0; i < Model.Tracks.Count; i++)
+                    {
+                        <tr>
+                            <td>
+                                <input asp-for="Tracks[i].Id" type="hidden" />
+                                <input asp-for="Tracks[i].OriginalFileName" type="hidden" />
+                                <input asp-for="Tracks[i].HasEmbeddedCover" type="hidden" />
+                                <div class="js-source-name">@Model.Tracks[i].OriginalFileName</div>
+                                <div class="muted-line">@Model.Tracks[i].ValidationSummary</div>
+                            </td>
+                            <td class="batch-track-number">
+                                <input asp-for="Tracks[i].TrackNumber" class="form-control" />
+                            </td>
+                            <td>
+                                <input asp-for="Tracks[i].Title" class="form-control" />
+                            </td>
+                            <td>
+                                <div class="form-check">
+                                    <input asp-for="Tracks[i].ReadyToImport" class="form-check-input" />
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Save batch review</button>
+        </form>
+    </section>
+
+    <section class="panel-card">
+        <h2>Validation status</h2>
+        <p><strong>Any embedded cover:</strong> @(Model.HasAnyEmbeddedCover ? "Yes" : "No")</p>
+        @if (Model.HasAnyEmbeddedCover && !string.IsNullOrWhiteSpace(Model.CoverPreviewUrl))
+        {
+            <div class="cover-preview-wrap">
+                <img src="@Model.CoverPreviewUrl" alt="Embedded cover preview" class="cover-preview" />
+            </div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(Model.DuplicateSummary))
+        {
+            <h3 class="mt-4">Duplicate signals</h3>
+            <pre class="validation-block warning-block">@Model.DuplicateSummary</pre>
+        }
+
+        @if (Model.DuplicateCandidates.Count > 0)
+        {
+            <div class="duplicate-list mt-3">
+            @foreach (var candidate in Model.DuplicateCandidates)
+            {
+                <article class="duplicate-item">
+                    <strong>@candidate.Reason</strong>
+                    <div class="muted-line">@candidate.RelativePath</div>
+                </article>
+            }
+            </div>
+        }
+
+        <div class="batch-target-list mt-4">
+        @foreach (var track in Model.Tracks.OrderBy(x => x.TrackNumber))
+        {
+            <article class="duplicate-item">
+                <strong>@track.TrackNumber.ToString("00") - @track.Title</strong>
+                <div class="muted-line">@track.ProposedRelativePath</div>
+            </article>
+        }
+        </div>
+
+        <form asp-action="CommitBatch" method="post" class="mt-3 d-flex gap-2 flex-wrap">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="batchId" value="@batchId" />
+            <button type="submit" class="btn btn-success">Import ready tracks</button>
+        </form>
+
+        <form asp-action="RejectBatch" method="post" class="mt-3">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="batchId" value="@batchId" />
+            <button type="submit" class="btn btn-outline-danger">Reject whole batch</button>
+        </form>
+    </section>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (() => {
+            const sanitizeTitle = (name) => name
+                .replace(/\.[^.]+$/, '')
+                .replace(/^\s*\d+\s*[-_. ]*\s*/, '')
+                .replace(/_/g, ' ')
+                .trim();
+
+            document.querySelector('.js-autofill-titles')?.addEventListener('click', () => {
+                document.querySelectorAll('tbody tr').forEach((row) => {
+                    const source = row.querySelector('.js-source-name')?.textContent ?? '';
+                    const titleInput = row.querySelector('input[name$=".Title"]');
+                    if (titleInput) {
+                        titleInput.value = sanitizeTitle(source) || source;
+                    }
+                });
+            });
+
+            document.querySelector('.js-autonumber-tracks')?.addEventListener('click', () => {
+                document.querySelectorAll('tbody tr').forEach((row, index) => {
+                    const numberInput = row.querySelector('input[name$=".TrackNumber"]');
+                    if (numberInput) {
+                        numberInput.value = index + 1;
+                    }
+                });
+            });
+        })();
+    </script>
+}

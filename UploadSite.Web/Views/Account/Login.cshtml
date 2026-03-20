@@ -1,0 +1,36 @@
+@model UploadSite.Web.ViewModels.Account.LoginViewModel
+@{
+    ViewData["Title"] = "Login";
+}
+
+<section class="auth-panel">
+    <div class="auth-card">
+        <p class="eyebrow">Music intake</p>
+        <h1>Sign in to upload music</h1>
+        <p class="subtle-copy">Tracks land in staging first, then go through metadata review before entering your Jellyfin library.</p>
+
+        <form method="post" asp-action="Login">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" />
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="mb-3">
+                <label asp-for="UserName" class="form-label"></label>
+                <input asp-for="UserName" class="form-control form-control-lg" autocomplete="username" />
+                <span asp-validation-for="UserName" class="text-danger"></span>
+            </div>
+
+            <div class="mb-4">
+                <label asp-for="Password" class="form-label"></label>
+                <input asp-for="Password" class="form-control form-control-lg" autocomplete="current-password" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg w-100">Sign in</button>
+        </form>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

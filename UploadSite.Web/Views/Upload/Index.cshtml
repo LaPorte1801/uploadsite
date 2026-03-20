@@ -1,0 +1,52 @@
+@model UploadSite.Web.ViewModels.Upload.UploadDashboardViewModel
+@{
+    ViewData["Title"] = "Uploads";
+}
+
+<section class="page-header">
+    <div>
+        <p class="eyebrow">Library intake</p>
+        <h1>Upload music for Jellyfin</h1>
+        <p class="subtle-copy">Accepted formats: MP3, M4A, FLAC. Every file must include embedded cover art and full metadata.</p>
+    </div>
+    <div class="status-chip">Drag, drop, review, import</div>
+</section>
+
+<div class="dashboard-grid">
+    <section class="panel-card upload-panel">
+        <h2>Add tracks</h2>
+        <form asp-action="Create" method="post" enctype="multipart/form-data" id="upload-form">
+            @Html.AntiForgeryToken()
+            <label class="dropzone" for="audio-file">
+                <input type="file" name="AudioFiles" id="audio-file" class="dropzone-input" multiple accept=".mp3,.m4a,.flac,audio/mpeg,audio/flac,audio/mp4" />
+                <span class="dropzone-title" id="dropzone-title">Drop audio files here</span>
+                <span class="dropzone-subtitle" id="dropzone-subtitle">or click to choose an album from disk</span>
+            </label>
+            <button type="submit" class="btn btn-primary btn-lg mt-3">Upload to staging</button>
+        </form>
+    </section>
+
+    <section class="panel-card">
+        <h2>Recent uploads</h2>
+        <div class="history-list">
+        @foreach (var item in Model.RecentItems)
+        {
+            <article class="history-item">
+                <div>
+                    <strong>@item.TrackNumber.ToString("00") - @item.Title</strong>
+                    <div class="muted-line">@item.Artist / @item.Album (@item.Year)</div>
+                    <div class="muted-line">@item.OriginalFileName</div>
+                </div>
+                <div class="history-meta">
+                    <span class="badge rounded-pill text-bg-secondary">@item.Status</span>
+                    <small>@item.UploadedAtUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</small>
+                </div>
+                @if (!string.IsNullOrWhiteSpace(item.ValidationSummary))
+                {
+                    <p class="validation-copy">@item.ValidationSummary</p>
+                }
+            </article>
+        }
+        </div>
+    </section>
+</div>

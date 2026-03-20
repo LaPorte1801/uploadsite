@@ -1,0 +1,72 @@
+@using UploadSite.Web.Enums
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - UploadSite</title>
+    <script type="importmap"></script>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/UploadSite.Web.styles.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="app-shell">
+        <header class="topbar">
+            <div class="brand-block">
+                <a class="brand-link" asp-controller="Upload" asp-action="Index">UploadSite</a>
+                <span class="brand-tag">Jellyfin music intake</span>
+            </div>
+
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <nav class="topnav">
+                    <a asp-controller="Upload" asp-action="Index">Uploads</a>
+                    @if (User.IsInRole(nameof(UserRole.Admin)))
+                    {
+                        <a asp-controller="Upload" asp-action="Review">Review Queue</a>
+                        <a asp-controller="Admin" asp-action="Index">Users</a>
+                    }
+                </nav>
+
+                <div class="userbox">
+                    <span>@User.Identity?.Name</span>
+                    <form asp-controller="Account" asp-action="Logout" method="post">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-sm btn-outline-light">Log out</button>
+                    </form>
+                </div>
+            }
+        </header>
+
+        <main class="page-wrap">
+            @if (TempData["UploadSuccess"] is string uploadSuccess)
+            {
+                <div class="alert alert-success">@uploadSuccess</div>
+            }
+
+            @if (TempData["UploadError"] is string uploadError)
+            {
+                <div class="alert alert-danger">@uploadError</div>
+            }
+
+            @if (TempData["AdminSuccess"] is string adminSuccess)
+            {
+                <div class="alert alert-success">@adminSuccess</div>
+            }
+
+            @if (TempData["AdminError"] is string adminError)
+            {
+                <div class="alert alert-danger">@adminError</div>
+            }
+
+            @RenderBody()
+        </main>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

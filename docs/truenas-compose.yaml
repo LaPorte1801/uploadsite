@@ -1,0 +1,17 @@
+services:
+  uploadsite:
+    image: your-registry/uploadsite:latest
+    container_name: uploadsite
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      UPLOADSITE_ADMIN_USERNAME: admin
+      UPLOADSITE_ADMIN_PASSWORD: change-this-before-launch
+      UPLOADSITE_DB_PATH: /data/uploadsite.db
+      UPLOADSITE_STAGING_ROOT: /data/staging
+      UPLOADSITE_LIBRARY_ROOT: /music
+    volumes:
+      - /mnt/pool/apps/uploadsite:/data
+      - /mnt/pool/media/music:/music
+    ports:
+      - "8080:8080"

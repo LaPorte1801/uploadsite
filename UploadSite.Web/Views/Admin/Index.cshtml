@@ -1,0 +1,71 @@
+@model UploadSite.Web.ViewModels.Admin.AdminIndexViewModel
+@using UploadSite.Web.Enums
+@{
+    ViewData["Title"] = "Users";
+}
+
+<section class="page-header">
+    <div>
+        <p class="eyebrow">Administration</p>
+        <h1>Users and access</h1>
+    </div>
+</section>
+
+<div class="two-column-grid">
+    <section class="panel-card">
+        <h2>Create account</h2>
+        <form asp-action="CreateUser" method="post" class="stack-form">
+            @Html.AntiForgeryToken()
+            <div class="mb-3">
+                <label asp-for="CreateUser.UserName" class="form-label"></label>
+                <input asp-for="CreateUser.UserName" class="form-control" />
+            </div>
+            <div class="mb-3">
+                <label asp-for="CreateUser.Password" class="form-label"></label>
+                <input asp-for="CreateUser.Password" class="form-control" />
+            </div>
+            <div class="mb-3">
+                <label asp-for="CreateUser.ConfirmPassword" class="form-label"></label>
+                <input asp-for="CreateUser.ConfirmPassword" class="form-control" />
+            </div>
+            <div class="mb-4">
+                <label asp-for="CreateUser.Role" class="form-label"></label>
+                <select asp-for="CreateUser.Role" asp-items="Html.GetEnumSelectList<UserRole>()" class="form-select"></select>
+            </div>
+            <button type="submit" class="btn btn-primary">Create user</button>
+        </form>
+    </section>
+
+    <section class="panel-card">
+        <h2>Current users</h2>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Role</th>
+                        <th>Created</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var user in Model.Users)
+                {
+                    <tr>
+                        <td>@user.UserName</td>
+                        <td>@user.Role</td>
+                        <td>@user.CreatedAtUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                        <td class="text-end">
+                            <form asp-action="DeleteUser" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@user.Id" />
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>

@@ -1,0 +1,20 @@
+services:
+  uploadsite:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: uploadsite
+    ports:
+      - "8080:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      UPLOADSITE_ADMIN_USERNAME: admin
+      UPLOADSITE_ADMIN_PASSWORD: ChangeMeNow!
+      UPLOADSITE_DB_PATH: /data/uploadsite.db
+      UPLOADSITE_KEYS_PATH: /data/keys
+      UPLOADSITE_STAGING_ROOT: /data/staging
+      UPLOADSITE_LIBRARY_ROOT: /music
+    volumes:
+      - ./appdata:/data
+      - ./music-library:/music
+    restart: unless-stopped
